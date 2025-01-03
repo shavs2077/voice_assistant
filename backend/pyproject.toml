@@ -11,6 +11,11 @@ faster-whisper = "^1.1.0"
 transformers = "^4.47.1"
 fastapi = {extras = ["standard"], version = "^0.115.6"}
 python-multipart = "^0.0.20"
+pyaudio = "^0.2.14"
+llvmlite = "^0.43.0"
+numba = "^0.60.0"
+openai-whisper = "^20240930"
+ollama = "^0.4.5"
 
 
 [build-system]

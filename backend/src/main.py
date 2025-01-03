@@ -1,10 +1,15 @@
 import os
 from fastapi import FastAPI, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+import ollama
 
 from utils.VideoTranscriber import VideoTranscriber
 
 app = FastAPI()
+
+with open("./Modelfile", "r") as f:
+    ollama.create("Elenna", modelfile=f.read())
+    f.close()
 
 origins = [
     "http://localhost",
@@ -28,6 +33,12 @@ async def root():
     }
 
 
+def write_to_file(path: str, data_str: str):
+    with open(path, "wb") as transcription_file:
+        transcription_file.write(data_str.encode("utf-8"))
+
+        transcription_file.close()
+
 @app.post("/transcribe_audio")
 async def transcribe_audio(
     audio_file: UploadFile = Form(...),
@@ -46,14 +57,23 @@ async def transcribe_audio(
 
     transcript = transcriber.transcript(audio_path)
 
-    with open(transcription_path, "wb") as transcription_file:
-        transcription_file.write(transcript.encode("utf-8"))
-
-    transcription_file.close()
     os.remove(audio_path)
 
     # Here you can add code to handle the audio file, e.g., save it, process it, etc.
     return {
-        "message": "Audio transcription received",
+        "transcription": transcript,
     }
 
+@app.post("/ask_question")
+async def ask_question(
+    question: str = Form(...),
+):
+    response = ollama.chat("Elenna", [
+        {
+            "role": "user",
+            "content": question
+        }
+    ])
+    return {
+        "response": response['message']['content'],
+    }
